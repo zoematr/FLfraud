@@ -6,6 +6,11 @@ __pycache__/
 # Flower directory
 .flwr
 
+# Weights & Biases
+wandb/
+.wandb/
+.wandb_settings
+
 # C extensions
 *.so
 
