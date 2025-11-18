@@ -22,6 +22,18 @@ class LoggingFedAvg(FedAvg):
         """Aggregate training results and log metrics."""
         arrays, metrics = super().aggregate_train(server_round, replies)
         
+        # Log per-client training metrics
+        for i, reply in enumerate(replies):
+            client_metrics = reply.content.get("metrics", {})
+            partition_id = i  # Approximate partition ID from reply order
+            org_name = f"Org{partition_id + 1}"
+            
+            if client_metrics:
+                wandb.log({
+                    f"{org_name}/train_loss": client_metrics.get("train_loss", 0),
+                    f"{org_name}/num_examples": client_metrics.get("num-examples", 0),
+                }, step=server_round)
+        
         # Log aggregated training metrics
         if metrics:
             wandb.log({
@@ -34,6 +46,18 @@ class LoggingFedAvg(FedAvg):
     def aggregate_evaluate(self, server_round, replies):
         """Aggregate evaluation results and log metrics."""
         metrics = super().aggregate_evaluate(server_round, replies)
+        
+        # Log per-client evaluation metrics
+        for i, reply in enumerate(replies):
+            client_metrics = reply.content.get("metrics", {})
+            partition_id = i  # Approximate partition ID from reply order
+            org_name = f"Org{partition_id + 1}"
+            
+            if client_metrics:
+                wandb.log({
+                    f"{org_name}/eval_loss": client_metrics.get("eval_loss", 0),
+                    f"{org_name}/eval_acc": client_metrics.get("eval_acc", 0),
+                }, step=server_round)
         
         # Log aggregated evaluation metrics
         if metrics:
